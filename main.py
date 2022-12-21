@@ -29,17 +29,53 @@ class BaBlast(customtkinter.CTk):
         self.msg_input = customtkinter.CTkTextbox(self)
         self.msg_input.grid(row=0, column=0, columnspan=3, padx=20, pady=(20,0), sticky='nsew')
 
-        self.browse = customtkinter.CTkButton(master=self,text="Browse", command=self.browse_file)
+        self.browse = customtkinter.CTkButton(master=self,text="Buka daftar WP", command=self.browse_file)
         self.browse.grid(row=1, column=0, padx=20, pady=20, sticky='ew')
 
-        self.msg = customtkinter.CTkButton(master=self,text="Get Text", command=self.get_msg)
-        self.msg.grid(row=1, column=1, padx=20, pady=20, sticky='ew')
+        self.login_button = customtkinter.CTkButton(master=self, text='Login', command=self.login)
+        self.login_button.grid(row=1,column=1, padx=20, pady=20, sticky='ew')
+
+        self.blast_button = customtkinter.CTkButton(master=self, text='Blast!', command=self.blast)
+        #self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
+        #self.blast_button.configure(state='disabled')
+
+        # self.msg = customtkinter.CTkButton(master=self,text="Get Text", command=self.get_msg)
+        # self.msg.grid(row=1, column=1, padx=20, pady=20, sticky='ew')
 
 
 
     def browse_file(self):
         filepath = tkinter.filedialog.askopenfilename(filetypes=(("Excel file", "*.xlsx"), ("All Files","*.*")))
         self.data = pd.read_excel(filepath,dtype=str)
+        self.data['status'] = '-'
+
+    def login(self):
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(),options=Options())
+        self.driver.get('https://web.whatsapp.com/')
+        #self.blast_button.configure(state='enabled')
+        self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
+        
+
+    def blast(self):
+        for i in range(len(self.data)):
+            current_data = self.data.iloc[i]
+            text = self.msg_input.get('0.0','end')
+            text = text.format(nama_wp=current_data['nama_wp'],npwp=current_data['npwp'], nama_ar=current_data['nama_ar'],nomor_ar=current_data['nomor_ar'])
+            url = 'https://web.whatsapp.com/send?phone={}&text&type=phone_number&app_absent=0'.format(current_data.nomor_wp)
+            self.driver.get(url)
+            try :
+                WebDriverWait(self.driver,10).until(EC.element_to_be_clickable((By.XPATH,'//div[@title="Type a message"]')))
+                field = self.driver.find_element('xpath','//div[@title="Type a message"]')
+                for msg in text.split('\n'):
+                    field.send_keys(msg)
+                    field.send_keys(Keys.SHIFT, Keys.ENTER)
+                send = self.driver.find_element('xpath','//button[@aria-label="Send"]')
+                send.click()
+                self.data['status'].iloc[i] = 'Sukses!'
+                time.sleep(2)
+            except:
+                self.data['status'].iloc[i] = 'Gagal!'
+        self.data.to_excel('hasil_blast.xlsx', index=False)
 
     def get_msg(self):
         msg = self.msg_input.get("0.0",'end')
