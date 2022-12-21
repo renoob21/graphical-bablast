@@ -38,6 +38,12 @@ class BaBlast(customtkinter.CTk):
         self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
         self.blast_button.configure(state='disabled')
 
+                # add output for the blasting process
+        self.progress_blast = customtkinter.CTkTextbox(self)
+        self.progress_blast.grid(row=2, column=0, columnspan=3, padx=20, pady=(20,0), sticky='nsew')
+        self.progress_blast.tag_config('gagal', foreground='red')
+        self.progress_blast.tag_config('sukses', foreground='green')
+
         # self.msg = customtkinter.CTkButton(master=self,text="Get Text", command=self.get_msg)
         # self.msg.grid(row=1, column=1, padx=20, pady=20, sticky='ew')
 
@@ -57,6 +63,7 @@ class BaBlast(customtkinter.CTk):
 
     def blast(self):
         for i in range(len(self.data)):
+
             current_data = self.data.iloc[i]
             text = self.msg_input.get('0.0','end')
             text = text.format(nama_wp=current_data['nama_wp'],npwp=current_data['npwp'], nama_ar=current_data['nama_ar'],nomor_ar=current_data['nomor_ar'])
@@ -70,10 +77,14 @@ class BaBlast(customtkinter.CTk):
                     field.send_keys(Keys.SHIFT, Keys.ENTER)
                 send = self.driver.find_element('xpath','//button[@aria-label="Send"]')
                 send.click()
-                self.data['status'].iloc[i] = 'Sukses!'
+                status = "Sukses!\n"
+                tag = 'sukses'
                 time.sleep(2)
             except:
-                self.data['status'].iloc[i] = 'Gagal!'
+                status = 'Gagal!\n'
+                tag = 'gagal'
+            self.progress_blast.insert('end',status, tags=tag)
+            self.data['status'].iloc[i] = status
         self.data.to_excel('hasil_blast.xlsx', index=False)
 
     def get_msg(self):
