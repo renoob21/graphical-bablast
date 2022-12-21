@@ -36,8 +36,8 @@ class BaBlast(customtkinter.CTk):
         self.login_button.grid(row=1,column=1, padx=20, pady=20, sticky='ew')
 
         self.blast_button = customtkinter.CTkButton(master=self, text='Blast!', command=self.blast)
-        #self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
-        #self.blast_button.configure(state='disabled')
+        self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
+        self.blast_button.configure(state='disabled')
 
         # self.msg = customtkinter.CTkButton(master=self,text="Get Text", command=self.get_msg)
         # self.msg.grid(row=1, column=1, padx=20, pady=20, sticky='ew')
@@ -52,8 +52,8 @@ class BaBlast(customtkinter.CTk):
     def login(self):
         self.driver = webdriver.Chrome(ChromeDriverManager().install(),options=Options())
         self.driver.get('https://web.whatsapp.com/')
-        #self.blast_button.configure(state='enabled')
-        self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
+        self.blast_button.configure(state='normal')
+        #self.blast_button.grid(row=1,column=2, padx=20, pady=20, sticky='ew')
         
 
     def blast(self):
